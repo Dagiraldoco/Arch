@@ -98,6 +98,7 @@
             display: flex;
             align-items: center;
             gap: 5px;
+            flex-wrap: wrap;
         }
 
         .input-group input {
@@ -234,7 +235,10 @@
                 const bubble = document.createElement('div');
                 bubble.className = 'bubble';
                 
-                if (index === 3) {
+                if (index === 0) {
+                    // Create feet/inches to cm converter for the first bubble (top-left)
+                    createFeetInchesConverter(bubble);
+                } else if (index === 3) {
                     // Create converter for the top-right bubble (4th position, index 3)
                     createConverter(bubble);
                 } else {
@@ -348,6 +352,57 @@
 
             inputValue.addEventListener('input', calculate);
             swapBtn.addEventListener('click', swapMode);
+        }
+
+        function createFeetInchesConverter(bubble) {
+            bubble.innerHTML = `
+                <div class="converter">
+                    <div class="converter-header">
+                        <span class="converter-title">ft/in → cm → m</span>
+                    </div>
+                    <div class="input-group">
+                        <input type="number" id="feetInput" placeholder="0" min="0" step="1">
+                        <span class="input-label">ft</span>
+                        <input type="number" id="inchesInput" placeholder="0" min="0" max="11.99" step="0.01">
+                        <span class="input-label">in</span>
+                    </div>
+                    <div class="results">
+                        <div class="result-item">
+                            <span class="result-label">Centimeters:</span>
+                            <span class="result-value" id="cmValue">0.0 cm</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Meters:</span>
+                            <span class="result-value" id="mValue">0.000 m</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const feetInput = bubble.querySelector('#feetInput');
+            const inchesInput = bubble.querySelector('#inchesInput');
+            const cmValue = bubble.querySelector('#cmValue');
+            const mValue = bubble.querySelector('#mValue');
+
+            function calculateFeetInches() {
+                const feet = parseFloat(feetInput.value) || 0;
+                const inches = parseFloat(inchesInput.value) || 0;
+                
+                // Convert to total inches first
+                const totalInches = (feet * 12) + inches;
+                
+                // Convert inches to centimeters (1 inch = 2.54 cm)
+                const centimeters = totalInches * 2.54;
+                
+                // Convert centimeters to meters
+                const meters = centimeters / 100;
+                
+                cmValue.textContent = `${centimeters.toFixed(1)} cm`;
+                mValue.textContent = `${meters.toFixed(3)} m`;
+            }
+
+            feetInput.addEventListener('input', calculateFeetInches);
+            inchesInput.addEventListener('input', calculateFeetInches);
         }
 
         // Initialize the app when page loads
