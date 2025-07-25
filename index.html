@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Architecture Word Grid</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #4682B4 0%, #2B2B2B 50%, #6E7B8B 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 20px;
+            min-height: 600px;
+        }
+
+        .bubble {
+            background: linear-gradient(145deg, #F5F5F5 0%, #DCDCDC 100%);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(43, 43, 43, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid #D6D6D6;
+            min-height: 120px;
+        }
+
+        .bubble:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(43, 43, 43, 0.25);
+            background: linear-gradient(145deg, #F5F5F5 0%, #D6D6D6 100%);
+        }
+
+        .bubble:active {
+            transform: translateY(-2px) scale(1.02);
+        }
+
+        .converter {
+            width: 100%;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .converter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .converter-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .swap-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.2s ease;
+        }
+
+        .swap-btn:hover {
+            background: #5a67d8;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 6px 8px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            background: white;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #4a5568;
+            min-width: 15px;
+        }
+
+        .results {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .result-label {
+            font-size: 0.8rem;
+            color: #718096;
+            font-weight: 500;
+        }
+
+        .result-value {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .word {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2B2B2B;
+            text-align: center;
+            padding: 10px;
+            text-transform: capitalize;
+        }
+
+        .title {
+            text-align: center;
+            color: #F5F5F5;
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 40px;
+            text-shadow: 2px 2px 4px rgba(43, 43, 43, 0.5);
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(12, 1fr);
+                min-height: auto;
+                gap: 15px;
+            }
+
+            .bubble {
+                min-height: 80px;
+            }
+
+            .word {
+                font-size: 1rem;
+            }
+
+            .title {
+                font-size: 2rem;
+                margin-bottom: 30px;
+            }
+
+            body {
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .title {
+                font-size: 1.5rem;
+            }
+
+            .word {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">ArchXYZ</h1>
+        <div class="grid" id="wordGrid">
+            <!-- Bubbles will be generated by JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        // Set of 12 architecture words that you can easily change
+        const architectureWords = [
+            'Buttress',
+            'Cantilever',
+            'Portico',
+            'Colonnade',
+            'Pediment',
+            'Architrave',
+            'Clerestory',
+            'Corbel',
+            'Spandrel',
+            'Loggia',
+            'Entablature',
+            'Pilaster'
+        ];
+
+        function createBubbles() {
+            const grid = document.getElementById('wordGrid');
+            grid.innerHTML = ''; // Clear existing bubbles
+
+            architectureWords.forEach((word, index) => {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                
+                if (index === 3) {
+                    // Create converter for the top-right bubble (4th position, index 3)
+                    createConverter(bubble);
+                } else {
+                    // Create regular word bubble
+                    const wordElement = document.createElement('div');
+                    wordElement.className = 'word';
+                    wordElement.textContent = word;
+                    
+                    bubble.appendChild(wordElement);
+                    
+                    // Add click event to perform Google "I'm Feeling Lucky" search
+                    bubble.addEventListener('click', () => {
+                        const searchQuery = `${word} architecture definition`;
+                        const luckySearchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}&btnI=1`;
+                        window.open(luckySearchUrl, '_blank');
+                    });
+
+                    // Add hover effect for better UX
+                    bubble.addEventListener('mouseenter', () => {
+                        wordElement.style.color = '#484848';
+                    });
+
+                    bubble.addEventListener('mouseleave', () => {
+                        wordElement.style.color = '#2B2B2B';
+                    });
+                }
+
+                grid.appendChild(bubble);
+            });
+        }
+
+        function createConverter(bubble) {
+            let isDegreesToSlope = true; // Track current mode
+            
+            bubble.innerHTML = `
+                <div class="converter">
+                    <div class="converter-header">
+                        <span class="converter-title">° to Slope</span>
+                        <button class="swap-btn" id="swapBtn">⇄</button>
+                    </div>
+                    <div class="input-group">
+                        <input type="number" id="inputValue" placeholder="0" min="0" max="360" step="0.001">
+                        <span class="input-label" id="inputLabel">°</span>
+                    </div>
+                    <div class="results">
+                        <div class="result-item">
+                            <span class="result-label" id="percentLabel">Slope %:</span>
+                            <span class="result-value" id="percentValue">0.000</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label" id="ratioLabel">Ratio:</span>
+                            <span class="result-value" id="ratioValue">1:∞</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const inputValue = bubble.querySelector('#inputValue');
+            const inputLabel = bubble.querySelector('#inputLabel');
+            const percentLabel = bubble.querySelector('#percentLabel');
+            const percentValue = bubble.querySelector('#percentValue');
+            const ratioLabel = bubble.querySelector('#ratioLabel');
+            const ratioValue = bubble.querySelector('#ratioValue');
+            const swapBtn = bubble.querySelector('#swapBtn');
+
+            function calculate() {
+                const value = parseFloat(inputValue.value) || 0;
+                
+                if (isDegreesToSlope) {
+                    // Convert degrees to slope
+                    const radians = value * (Math.PI / 180);
+                    const slopePercent = Math.tan(radians) * 100;
+                    const ratio = slopePercent === 0 ? '1:∞' : `1:${(100 / Math.abs(slopePercent)).toFixed(3)}`;
+                    
+                    percentValue.textContent = slopePercent.toFixed(3);
+                    ratioValue.textContent = ratio;
+                } else {
+                    // Convert slope percentage to degrees
+                    const slopeDecimal = value / 100;
+                    const radians = Math.atan(slopeDecimal);
+                    const degrees = radians * (180 / Math.PI);
+                    const ratio = value === 0 ? '1:∞' : `1:${(100 / Math.abs(value)).toFixed(3)}`;
+                    
+                    percentValue.textContent = degrees.toFixed(3);
+                    ratioValue.textContent = ratio;
+                }
+            }
+
+            function swapMode() {
+                isDegreesToSlope = !isDegreesToSlope;
+                inputValue.value = '';
+                
+                if (isDegreesToSlope) {
+                    bubble.querySelector('.converter-title').textContent = '° to Slope';
+                    inputLabel.textContent = '°';
+                    inputValue.max = '360';
+                    percentLabel.textContent = 'Slope %:';
+                    ratioLabel.textContent = 'Ratio:';
+                    percentValue.textContent = '0.000';
+                    ratioValue.textContent = '1:∞';
+                } else {
+                    bubble.querySelector('.converter-title').textContent = 'Slope to °';
+                    inputLabel.textContent = '%';
+                    inputValue.max = '999999';
+                    percentLabel.textContent = 'Degrees:';
+                    ratioLabel.textContent = 'Ratio:';
+                    percentValue.textContent = '0.000';
+                    ratioValue.textContent = '1:∞';
+                }
+            }
+
+            inputValue.addEventListener('input', calculate);
+            swapBtn.addEventListener('click', swapMode);
+        }
+
+        // Initialize the app when page loads
+        document.addEventListener('DOMContentLoaded', createBubbles);
+    </script>
+</body>
+</html>
