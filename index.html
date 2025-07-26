@@ -355,12 +355,15 @@
         }
 
         function createFeetInchesConverter(bubble) {
+            let isImperialToMetric = true; // Track current mode
+            
             bubble.innerHTML = `
                 <div class="converter">
                     <div class="converter-header">
-                        <span class="converter-title">ft/in → cm → m</span>
+                        <span class="converter-title">ft/in → cm/m</span>
+                        <button class="swap-btn" id="swapBtnFeet">⇄</button>
                     </div>
-                    <div class="input-group">
+                    <div class="input-group" id="inputContainer">
                         <input type="number" id="feetInput" placeholder="0" min="0" step="1">
                         <span class="input-label">ft</span>
                         <input type="number" id="inchesInput" placeholder="0" min="0" max="11.99" step="0.01">
@@ -368,23 +371,28 @@
                     </div>
                     <div class="results">
                         <div class="result-item">
-                            <span class="result-label">Centimeters:</span>
-                            <span class="result-value" id="cmValue">0.0 cm</span>
+                            <span class="result-label" id="firstResultLabel">Centimeters:</span>
+                            <span class="result-value" id="firstResultValue">0.0 cm</span>
                         </div>
                         <div class="result-item">
-                            <span class="result-label">Meters:</span>
-                            <span class="result-value" id="mValue">0.000 m</span>
+                            <span class="result-label" id="secondResultLabel">Meters:</span>
+                            <span class="result-value" id="secondResultValue">0.000 m</span>
                         </div>
                     </div>
                 </div>
             `;
 
-            const feetInput = bubble.querySelector('#feetInput');
-            const inchesInput = bubble.querySelector('#inchesInput');
-            const cmValue = bubble.querySelector('#cmValue');
-            const mValue = bubble.querySelector('#mValue');
+            const inputContainer = bubble.querySelector('#inputContainer');
+            const firstResultLabel = bubble.querySelector('#firstResultLabel');
+            const firstResultValue = bubble.querySelector('#firstResultValue');
+            const secondResultLabel = bubble.querySelector('#secondResultLabel');
+            const secondResultValue = bubble.querySelector('#secondResultValue');
+            const swapBtnFeet = bubble.querySelector('#swapBtnFeet');
+            const converterTitle = bubble.querySelector('.converter-title');
 
-            function calculateFeetInches() {
+            function calculateImperialToMetric() {
+                const feetInput = bubble.querySelector('#feetInput');
+                const inchesInput = bubble.querySelector('#inchesInput');
                 const feet = parseFloat(feetInput.value) || 0;
                 const inches = parseFloat(inchesInput.value) || 0;
                 
@@ -397,12 +405,104 @@
                 // Convert centimeters to meters
                 const meters = centimeters / 100;
                 
-                cmValue.textContent = `${centimeters.toFixed(1)} cm`;
-                mValue.textContent = `${meters.toFixed(3)} m`;
+                firstResultValue.textContent = `${centimeters.toFixed(1)} cm`;
+                secondResultValue.textContent = `${meters.toFixed(3)} m`;
             }
 
-            feetInput.addEventListener('input', calculateFeetInches);
-            inchesInput.addEventListener('input', calculateFeetInches);
+            function calculateMetricToImperial() {
+                const cmInput = bubble.querySelector('#cmInput');
+                const mInput = bubble.querySelector('#mInput');
+                const cm = parseFloat(cmInput?.value) || 0;
+                const m = parseFloat(mInput?.value) || 0;
+                
+                // Convert everything to centimeters first
+                const totalCm = cm + (m * 100);
+                
+                // Convert cm to inches (1 cm = 0.393701 inches)
+                const totalInches = totalCm * 0.393701;
+                
+                // Convert to feet and inches
+                const feet = Math.floor(totalInches / 12);
+                const remainingInches = totalInches % 12;
+                
+                // Round to nearest 1/4 inch
+                const quarterInches = Math.round(remainingInches * 4) / 4;
+                
+                // Format the result
+                let inchesDisplay = '';
+                if (quarterInches === 0) {
+                    inchesDisplay = '0"';
+                } else if (quarterInches % 1 === 0) {
+                    inchesDisplay = `${quarterInches}"`;
+                } else {
+                    // Convert decimal to fraction
+                    const wholePart = Math.floor(quarterInches);
+                    const fractionalPart = quarterInches - wholePart;
+                    let fraction = '';
+                    
+                    if (fractionalPart === 0.25) fraction = '1/4';
+                    else if (fractionalPart === 0.5) fraction = '1/2';
+                    else if (fractionalPart === 0.75) fraction = '3/4';
+                    
+                    if (wholePart > 0) {
+                        inchesDisplay = `${wholePart} ${fraction}"`;
+                    } else {
+                        inchesDisplay = `${fraction}"`;
+                    }
+                }
+                
+                const feetDisplay = feet > 0 ? `${feet}'` : '';
+                const fullDisplay = feetDisplay + (feetDisplay && inchesDisplay !== '0"' ? ' ' : '') + (inchesDisplay !== '0"' ? inchesDisplay : (feetDisplay ? '' : '0"'));
+                
+                firstResultValue.textContent = fullDisplay;
+                secondResultValue.textContent = `${totalInches.toFixed(2)}"`;
+            }
+
+            function swapMode() {
+                isImperialToMetric = !isImperialToMetric;
+                
+                if (isImperialToMetric) {
+                    // Imperial to Metric mode
+                    converterTitle.textContent = 'ft/in → cm/m';
+                    inputContainer.innerHTML = `
+                        <input type="number" id="feetInput" placeholder="0" min="0" step="1">
+                        <span class="input-label">ft</span>
+                        <input type="number" id="inchesInput" placeholder="0" min="0" max="11.99" step="0.01">
+                        <span class="input-label">in</span>
+                    `;
+                    firstResultLabel.textContent = 'Centimeters:';
+                    secondResultLabel.textContent = 'Meters:';
+                    firstResultValue.textContent = '0.0 cm';
+                    secondResultValue.textContent = '0.000 m';
+                    
+                    // Add event listeners for imperial inputs
+                    bubble.querySelector('#feetInput').addEventListener('input', calculateImperialToMetric);
+                    bubble.querySelector('#inchesInput').addEventListener('input', calculateImperialToMetric);
+                    
+                } else {
+                    // Metric to Imperial mode
+                    converterTitle.textContent = 'cm/m → ft/in';
+                    inputContainer.innerHTML = `
+                        <input type="number" id="cmInput" placeholder="0" min="0" step="0.1">
+                        <span class="input-label">cm</span>
+                        <input type="number" id="mInput" placeholder="0" min="0" step="0.001">
+                        <span class="input-label">m</span>
+                    `;
+                    firstResultLabel.textContent = 'Feet & Inches:';
+                    secondResultLabel.textContent = 'Total Inches:';
+                    firstResultValue.textContent = '0"';
+                    secondResultValue.textContent = '0.00"';
+                    
+                    // Add event listeners for metric inputs
+                    bubble.querySelector('#cmInput').addEventListener('input', calculateMetricToImperial);
+                    bubble.querySelector('#mInput').addEventListener('input', calculateMetricToImperial);
+                }
+            }
+
+            // Initialize with imperial to metric
+            bubble.querySelector('#feetInput').addEventListener('input', calculateImperialToMetric);
+            bubble.querySelector('#inchesInput').addEventListener('input', calculateImperialToMetric);
+            swapBtnFeet.addEventListener('click', swapMode);
         }
 
         // Initialize the app when page loads
