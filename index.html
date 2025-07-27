@@ -13,7 +13,7 @@
 
         body {
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #4682B4 0%, #2B2B2B 50%, #6E7B8B 100%);
+            background: linear-gradient(135deg, #228B22 0%, #6E7B8B 30%, #8C7B75 70%, #2B2B2B 100%);
             min-height: 100vh;
             padding: 20px;
             display: flex;
@@ -35,8 +35,8 @@
         }
 
         .bubble {
-            background: linear-gradient(145deg, #F5F5F5 0%, #DCDCDC 100%);
-            border-radius: 8px;
+            background: linear-gradient(145deg, #D9CBA3 0%, #B2B2B2 100%);
+            border-radius: 3px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -44,14 +44,14 @@
             transition: all 0.3s ease;
             box-shadow: 0 8px 32px rgba(43, 43, 43, 0.15);
             backdrop-filter: blur(10px);
-            border: 1px solid #D6D6D6;
+            border: 1px solid #A89F91;
             min-height: 120px;
         }
 
         .bubble:hover {
             transform: translateY(-5px) scale(1.05);
             box-shadow: 0 15px 40px rgba(43, 43, 43, 0.25);
-            background: linear-gradient(145deg, #F5F5F5 0%, #D6D6D6 100%);
+            background: linear-gradient(145deg, #EEDC82 0%, #DCDCDC 100%);
         }
 
         .bubble:active {
@@ -149,7 +149,7 @@
         .word {
             font-size: 1.2rem;
             font-weight: 600;
-            color: #2B2B2B;
+            color: #70543E;
             text-align: center;
             padding: 10px;
             text-transform: capitalize;
@@ -162,6 +162,8 @@
             font-weight: 300;
             margin-bottom: 40px;
             text-shadow: 2px 2px 4px rgba(43, 43, 43, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
 
         /* Mobile responsiveness */
@@ -213,18 +215,18 @@
     <script>
         // Set of 12 architecture words that you can easily change
         const architectureWords = [
-            'Buttress',
-            'Cantilever',
-            'Portico',
-            'Colonnade',
-            'Pediment',
-            'Architrave',
-            'Clerestory',
-            'Corbel',
-            'Spandrel',
-            'Loggia',
-            'Entablature',
-            'Pilaster'
+            'Facade',
+            'Atrium',
+            'Dormer',
+            'Balustrade',
+            'Frieze',
+            'Parapet',
+            'Transom',
+            'Soffit',
+            'Mullion',
+            'Quoin',
+            'Lintel',
+            'Casement'
         ];
 
         function createBubbles() {
@@ -258,11 +260,11 @@
 
                     // Add hover effect for better UX
                     bubble.addEventListener('mouseenter', () => {
-                        wordElement.style.color = '#484848';
+                        wordElement.style.color = '#5D473A';
                     });
 
                     bubble.addEventListener('mouseleave', () => {
-                        wordElement.style.color = '#2B2B2B';
+                        wordElement.style.color = '#70543E';
                     });
                 }
 
