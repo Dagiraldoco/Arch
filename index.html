@@ -13,7 +13,46 @@
 
         body {
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #228B22 0%, #6E7B8B 30%, #8C7B75 70%, #2B2B2B 100%);
+            background: #2B2B2B;
+            background-image: 
+                /* Triangles layer */
+                conic-gradient(at 50% 50%, transparent 120deg, #4682B4 120deg, #4682B4 180deg, transparent 180deg, transparent 240deg, #228B22 240deg, #228B22 300deg, transparent 300deg),
+                conic-gradient(at 25% 25%, transparent 60deg, #8C7B75 60deg, #8C7B75 120deg, transparent 120deg, transparent 180deg, #B7410E 180deg, #B7410E 240deg, transparent 240deg),
+                conic-gradient(at 75% 75%, transparent 0deg, #7C482B 0deg, #7C482B 60deg, transparent 60deg, transparent 180deg, #A89F91 180deg, #A89F91 240deg, transparent 240deg),
+                /* Hexagon pattern layer */
+                radial-gradient(circle at 20% 20%, rgba(110, 123, 139, 0.3) 15%, transparent 15%),
+                radial-gradient(circle at 50% 50%, rgba(72, 72, 72, 0.2) 10%, transparent 10%),
+                radial-gradient(circle at 80% 30%, rgba(34, 139, 34, 0.15) 12%, transparent 12%),
+                radial-gradient(circle at 30% 80%, rgba(214, 214, 214, 0.1) 8%, transparent 8%),
+                radial-gradient(circle at 70% 20%, rgba(183, 65, 14, 0.2) 6%, transparent 6%),
+                /* Hexagonal grid overlay */
+                linear-gradient(30deg, rgba(245, 245, 245, 0.05) 1px, transparent 1px),
+                linear-gradient(150deg, rgba(245, 245, 245, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(245, 245, 245, 0.03) 1px, transparent 1px);
+            background-size: 
+                120px 120px,
+                80px 80px,
+                100px 100px,
+                200px 200px,
+                150px 150px,
+                180px 180px,
+                90px 90px,
+                140px 140px,
+                60px 60px,
+                40px 40px,
+                30px 30px;
+            background-position:
+                0 0,
+                40px 40px,
+                -20px -20px,
+                0 0,
+                50px 50px,
+                100px 20px,
+                -30px 60px,
+                80px -40px,
+                0 0,
+                20px 20px,
+                10px 10px;
             min-height: 100vh;
             padding: 20px;
             display: flex;
