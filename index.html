@@ -15,44 +15,33 @@
             font-family: 'Arial', sans-serif;
             background: #2B2B2B;
             background-image: 
-                /* Triangles layer */
-                conic-gradient(at 50% 50%, transparent 120deg, #4682B4 120deg, #4682B4 180deg, transparent 180deg, transparent 240deg, #228B22 240deg, #228B22 300deg, transparent 300deg),
-                conic-gradient(at 25% 25%, transparent 60deg, #8C7B75 60deg, #8C7B75 120deg, transparent 120deg, transparent 180deg, #B7410E 180deg, #B7410E 240deg, transparent 240deg),
-                conic-gradient(at 75% 75%, transparent 0deg, #7C482B 0deg, #7C482B 60deg, transparent 60deg, transparent 180deg, #A89F91 180deg, #A89F91 240deg, transparent 240deg),
-                /* Hexagon pattern layer */
-                radial-gradient(circle at 20% 20%, rgba(110, 123, 139, 0.3) 15%, transparent 15%),
-                radial-gradient(circle at 50% 50%, rgba(72, 72, 72, 0.2) 10%, transparent 10%),
-                radial-gradient(circle at 80% 30%, rgba(34, 139, 34, 0.15) 12%, transparent 12%),
-                radial-gradient(circle at 30% 80%, rgba(214, 214, 214, 0.1) 8%, transparent 8%),
-                radial-gradient(circle at 70% 20%, rgba(183, 65, 14, 0.2) 6%, transparent 6%),
-                /* Hexagonal grid overlay */
-                linear-gradient(30deg, rgba(245, 245, 245, 0.05) 1px, transparent 1px),
-                linear-gradient(150deg, rgba(245, 245, 245, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(245, 245, 245, 0.03) 1px, transparent 1px);
+                /* Very thin lines in multiple directions */
+                linear-gradient(0deg, rgba(245, 245, 245, 0.08) 1px, transparent 1px),
+                linear-gradient(30deg, rgba(245, 245, 245, 0.06) 1px, transparent 1px),
+                linear-gradient(60deg, rgba(245, 245, 245, 0.07) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(245, 245, 245, 0.08) 1px, transparent 1px),
+                linear-gradient(120deg, rgba(245, 245, 245, 0.06) 1px, transparent 1px),
+                linear-gradient(150deg, rgba(245, 245, 245, 0.07) 1px, transparent 1px),
+                linear-gradient(45deg, rgba(245, 245, 245, 0.05) 1px, transparent 1px),
+                linear-gradient(135deg, rgba(245, 245, 245, 0.05) 1px, transparent 1px);
             background-size: 
-                120px 120px,
-                80px 80px,
-                100px 100px,
-                200px 200px,
-                150px 150px,
-                180px 180px,
-                90px 90px,
-                140px 140px,
-                60px 60px,
                 40px 40px,
-                30px 30px;
+                60px 60px,
+                50px 50px,
+                35px 35px,
+                70px 70px,
+                45px 45px,
+                80px 80px,
+                55px 55px;
             background-position:
                 0 0,
-                40px 40px,
-                -20px -20px,
-                0 0,
-                50px 50px,
-                100px 20px,
-                -30px 60px,
-                80px -40px,
-                0 0,
-                20px 20px,
-                10px 10px;
+                10px 10px,
+                20px 5px,
+                5px 15px,
+                30px 20px,
+                15px 25px,
+                40px 0px,
+                25px 35px;
             min-height: 100vh;
             padding: 20px;
             display: flex;
@@ -75,7 +64,7 @@
 
         .bubble {
             background: linear-gradient(145deg, #D9CBA3 0%, #B2B2B2 100%);
-            border-radius: 3px;
+            border-radius: 25px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -124,6 +113,15 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 5px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            cursor: grab;
+            user-select: none;
+        }
+
+        .converter-header:active {
+            cursor: grabbing;
         }
 
         .converter-title {
@@ -212,12 +210,13 @@
         .title {
             text-align: center;
             color: #F5F5F5;
-            font-size: 2.5rem;
-            font-weight: 300;
+            font-size: 3.5rem;
+            font-weight: 700;
+            font-family: 'Georgia', serif;
             margin-bottom: 40px;
-            text-shadow: 2px 2px 4px rgba(43, 43, 43, 0.5);
+            text-shadow: 3px 3px 6px rgba(43, 43, 43, 0.7);
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 4px;
         }
 
         /* Mobile responsiveness */
@@ -273,18 +272,18 @@
 
         // Set of 12 architecture words that you can easily change
         const architectureWords = [
-            'Facade',
-            'Atrium',
-            'Dormer',
-            'Balustrade',
-            'Frieze',
-            'Parapet',
-            'Transom',
-            'Soffit',
-            'Mullion',
-            'Quoin',
-            'Lintel',
-            'Casement'
+            'Cantilever',
+            'Colonnade',
+            'Pedestal',
+            'Cornice',
+            'Arcade',
+            'Pilaster',
+            'Buttress',
+            'Spandrel',
+            'Loggia',
+            'Portico',
+            'Clerestory',
+            'Vault'
         ];
 
         function createBubbles() {
@@ -308,6 +307,9 @@
                 } else if (originalIndex === 3) {
                     // Create converter for the top-right bubble (4th position, index 3)
                     createConverter(bubble);
+                } else if (originalIndex === 1) {
+                    // Create temperature converter for the second bubble (index 1)
+                    createTemperatureConverter(bubble);
                 } else {
                     // Create regular word bubble
                     const word = architectureWords[originalIndex];
@@ -352,6 +354,19 @@
             // Mouse-based drag and drop instead of HTML5 drag API
             bubble.addEventListener('mousedown', (e) => {
                 if (e.button !== 0) return; // Only left mouse button
+                
+                // Allow drag only on word elements or converter headers, not on inputs/buttons
+                const isWordBubble = e.target.closest('.word');
+                const isConverterHeader = e.target.closest('.converter-header');
+                const isInteractiveElement = e.target.matches('input, button, .swap-btn');
+                
+                if (!isWordBubble && !isConverterHeader) {
+                    return;
+                }
+                
+                if (isInteractiveElement) {
+                    return;
+                }
                 
                 console.log('Mouse down on position:', position);
                 isDragging = true;
@@ -432,6 +447,11 @@
             
             // Prevent default click behavior during drag
             bubble.addEventListener('click', (e) => {
+                // Don't prevent clicks on interactive elements
+                if (e.target.matches('input, button, .swap-btn')) {
+                    return;
+                }
+                
                 if (isDragging) {
                     e.preventDefault();
                     e.stopPropagation();
@@ -673,6 +693,89 @@
             bubble.querySelector('#feetInput').addEventListener('input', calculateImperialToMetric);
             bubble.querySelector('#inchesInput').addEventListener('input', calculateImperialToMetric);
             swapBtnFeet.addEventListener('click', swapMode);
+        }
+
+        function createTemperatureConverter(bubble) {
+            let isCelsiusToFahrenheit = true; // Track current mode
+            
+            bubble.innerHTML = `
+                <div class="converter">
+                    <div class="converter-header">
+                        <span class="converter-title">°C to °F</span>
+                        <button class="swap-btn" id="swapBtnTemp">⇄</button>
+                    </div>
+                    <div class="input-group">
+                        <input type="number" id="tempInput" placeholder="0" step="0.1">
+                        <span class="input-label" id="tempInputLabel">°C</span>
+                    </div>
+                    <div class="results">
+                        <div class="result-item">
+                            <span class="result-label" id="tempResultLabel">Fahrenheit:</span>
+                            <span class="result-value" id="tempResultValue">32.0°F</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label" id="kelvinLabel">Kelvin:</span>
+                            <span class="result-value" id="kelvinValue">273.15 K</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const tempInput = bubble.querySelector('#tempInput');
+            const tempInputLabel = bubble.querySelector('#tempInputLabel');
+            const tempResultLabel = bubble.querySelector('#tempResultLabel');
+            const tempResultValue = bubble.querySelector('#tempResultValue');
+            const kelvinLabel = bubble.querySelector('#kelvinLabel');
+            const kelvinValue = bubble.querySelector('#kelvinValue');
+            const swapBtnTemp = bubble.querySelector('#swapBtnTemp');
+            const converterTitle = bubble.querySelector('.converter-title');
+
+            function calculateCelsiusToFahrenheit() {
+                const celsius = parseFloat(tempInput.value) || 0;
+                const fahrenheit = (celsius * 9/5) + 32;
+                const kelvin = celsius + 273.15;
+                
+                tempResultValue.textContent = `${fahrenheit.toFixed(1)}°F`;
+                kelvinValue.textContent = `${kelvin.toFixed(2)} K`;
+            }
+
+            function calculateFahrenheitToCelsius() {
+                const fahrenheit = parseFloat(tempInput.value) || 0;
+                const celsius = (fahrenheit - 32) * 5/9;
+                const kelvin = celsius + 273.15;
+                
+                tempResultValue.textContent = `${celsius.toFixed(1)}°C`;
+                kelvinValue.textContent = `${kelvin.toFixed(2)} K`;
+            }
+
+            function swapTempMode() {
+                isCelsiusToFahrenheit = !isCelsiusToFahrenheit;
+                tempInput.value = '';
+                
+                if (isCelsiusToFahrenheit) {
+                    converterTitle.textContent = '°C to °F';
+                    tempInputLabel.textContent = '°C';
+                    tempResultLabel.textContent = 'Fahrenheit:';
+                    tempResultValue.textContent = '32.0°F';
+                    kelvinValue.textContent = '273.15 K';
+                    
+                    tempInput.removeEventListener('input', calculateFahrenheitToCelsius);
+                    tempInput.addEventListener('input', calculateCelsiusToFahrenheit);
+                } else {
+                    converterTitle.textContent = '°F to °C';
+                    tempInputLabel.textContent = '°F';
+                    tempResultLabel.textContent = 'Celsius:';
+                    tempResultValue.textContent = '0.0°C';
+                    kelvinValue.textContent = '273.15 K';
+                    
+                    tempInput.removeEventListener('input', calculateCelsiusToFahrenheit);
+                    tempInput.addEventListener('input', calculateFahrenheitToCelsius);
+                }
+            }
+
+            // Initialize with celsius to fahrenheit
+            tempInput.addEventListener('input', calculateCelsiusToFahrenheit);
+            swapBtnTemp.addEventListener('click', swapTempMode);
         }
 
         // Initialize the app when page loads
