@@ -228,8 +228,8 @@
     </div>
 
     <script>
-        // Bubble order management
-        let bubbleOrder = JSON.parse(localStorage.getItem('bubbleOrder')) || Array.from({length: 12}, (_, i) => i);
+        // Bubble order management (in-memory storage)
+        let bubbleOrder = Array.from({length: 12}, (_, i) => i);
         let draggedIndex = null;
 
         // Set of 12 architecture words that you can easily change
@@ -256,7 +256,7 @@
             bubbleOrder.forEach((originalIndex, currentPosition) => {
                 const bubble = document.createElement('div');
                 bubble.className = 'bubble';
-                bubble.draggable = true;
+                bubble.draggable = false;
                 bubble.dataset.originalIndex = originalIndex;
                 bubble.dataset.currentPosition = currentPosition;
                 
@@ -306,51 +306,97 @@
         }
 
         function addDragListeners(bubble, position) {
-            bubble.addEventListener('dragstart', (e) => {
-                draggedIndex = position;
-                bubble.classList.add('dragging');
-                e.dataTransfer.effectAllowed = 'move';
-                e.dataTransfer.setData('text/html', bubble.outerHTML);
-            });
-
-            bubble.addEventListener('dragend', (e) => {
-                bubble.classList.remove('dragging');
-                draggedIndex = null;
-                // Remove drag-over class from all bubbles
-                document.querySelectorAll('.bubble').forEach(b => b.classList.remove('drag-over'));
-            });
-
-            bubble.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                e.dataTransfer.dropEffect = 'move';
-            });
-
-            bubble.addEventListener('dragenter', (e) => {
-                e.preventDefault();
-                if (draggedIndex !== null && draggedIndex !== position) {
-                    bubble.classList.add('drag-over');
-                }
-            });
-
-            bubble.addEventListener('dragleave', (e) => {
-                bubble.classList.remove('drag-over');
-            });
-
-            bubble.addEventListener('drop', (e) => {
-                e.preventDefault();
-                bubble.classList.remove('drag-over');
+            let isDragging = false;
+            let startX, startY;
+            let draggedElement = null;
+            
+            // Mouse-based drag and drop instead of HTML5 drag API
+            bubble.addEventListener('mousedown', (e) => {
+                if (e.button !== 0) return; // Only left mouse button
                 
-                if (draggedIndex !== null && draggedIndex !== position) {
-                    // Swap the positions in the bubbleOrder array
+                console.log('Mouse down on position:', position);
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                
+                bubble.classList.add('dragging');
+                draggedIndex = position;
+                
+                // Prevent text selection during drag
+                e.preventDefault();
+                
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+            });
+            
+            function handleMouseMove(e) {
+                if (!isDragging) return;
+                
+                // Check if we've moved enough to start dragging
+                const deltaX = Math.abs(e.clientX - startX);
+                const deltaY = Math.abs(e.clientY - startY);
+                
+                if (deltaX > 5 || deltaY > 5) {
+                    console.log('Dragging detected');
+                    
+                    // Find element under mouse cursor
+                    const elementBelow = document.elementFromPoint(e.clientX, e.clientY);
+                    const targetBubble = elementBelow?.closest('.bubble');
+                    
+                    // Remove drag-over from all bubbles
+                    document.querySelectorAll('.bubble').forEach(b => b.classList.remove('drag-over'));
+                    
+                    // Add drag-over to target bubble if it's different from dragged bubble
+                    if (targetBubble && targetBubble !== bubble) {
+                        targetBubble.classList.add('drag-over');
+                        console.log('Hovering over position:', targetBubble.dataset.currentPosition);
+                    }
+                }
+            }
+            
+            function handleMouseUp(e) {
+                if (!isDragging) return;
+                
+                console.log('Mouse up - checking for drop');
+                
+                // Find element under mouse cursor
+                const elementBelow = document.elementFromPoint(e.clientX, e.clientY);
+                const targetBubble = elementBelow?.closest('.bubble');
+                
+                if (targetBubble && targetBubble !== bubble) {
+                    const targetPosition = parseInt(targetBubble.dataset.currentPosition);
+                    console.log('Drop detected on position:', targetPosition, 'from:', draggedIndex);
+                    
+                    // Swap positions
                     const temp = bubbleOrder[draggedIndex];
-                    bubbleOrder[draggedIndex] = bubbleOrder[position];
-                    bubbleOrder[position] = temp;
+                    bubbleOrder[draggedIndex] = bubbleOrder[targetPosition];
+                    bubbleOrder[targetPosition] = temp;
                     
-                    // Save to localStorage
-                    localStorage.setItem('bubbleOrder', JSON.stringify(bubbleOrder));
+                    console.log('New order:', bubbleOrder);
                     
-                    // Recreate bubbles with new order
-                    createBubbles();
+                    // Recreate bubbles
+                    setTimeout(() => {
+                        createBubbles();
+                    }, 100);
+                }
+                
+                // Clean up
+                bubble.classList.remove('dragging');
+                document.querySelectorAll('.bubble').forEach(b => b.classList.remove('drag-over'));
+                
+                isDragging = false;
+                draggedIndex = null;
+                
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+            }
+            
+            // Prevent default click behavior during drag
+            bubble.addEventListener('click', (e) => {
+                if (isDragging) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
                 }
             });
         }
