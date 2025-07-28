@@ -386,42 +386,63 @@
             let startX, startY;
             let draggedElement = null;
             
-            // Mouse-based drag and drop instead of HTML5 drag API
-            bubble.addEventListener('mousedown', (e) => {
-                if (e.button !== 0) return; // Only left mouse button
+            // Mouse-based drag and drop
+            bubble.addEventListener('mousedown', handleStart);
+            
+            // Touch-based drag and drop for mobile
+            bubble.addEventListener('touchstart', handleStart, { passive: false });
+            
+            function handleStart(e) {
+                // For mouse events, only left button
+                if (e.type === 'mousedown' && e.button !== 0) return;
                 
-                // Only allow drag when clicking on the drag handle
+                // Only allow drag when clicking/touching on the drag handle
                 if (!e.target.closest('.drag-handle')) {
                     return;
                 }
                 
-                console.log('Mouse down on position:', position);
+                console.log('Drag start on position:', position);
                 isDragging = true;
-                startX = e.clientX;
-                startY = e.clientY;
+                
+                // Get coordinates from mouse or touch event
+                const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+                
+                startX = clientX;
+                startY = clientY;
                 
                 bubble.classList.add('dragging');
                 draggedIndex = position;
                 
-                // Prevent text selection during drag
+                // Prevent text selection and scrolling during drag
                 e.preventDefault();
                 
-                document.addEventListener('mousemove', handleMouseMove);
-                document.addEventListener('mouseup', handleMouseUp);
-            });
+                // Add move and end event listeners
+                if (e.type === 'touchstart') {
+                    document.addEventListener('touchmove', handleMove, { passive: false });
+                    document.addEventListener('touchend', handleEnd);
+                } else {
+                    document.addEventListener('mousemove', handleMove);
+                    document.addEventListener('mouseup', handleEnd);
+                }
+            }
             
-            function handleMouseMove(e) {
+            function handleMove(e) {
                 if (!isDragging) return;
                 
+                // Get coordinates from mouse or touch event
+                const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+                
                 // Check if we've moved enough to start dragging
-                const deltaX = Math.abs(e.clientX - startX);
-                const deltaY = Math.abs(e.clientY - startY);
+                const deltaX = Math.abs(clientX - startX);
+                const deltaY = Math.abs(clientY - startY);
                 
                 if (deltaX > 5 || deltaY > 5) {
                     console.log('Dragging detected');
                     
-                    // Find element under mouse cursor
-                    const elementBelow = document.elementFromPoint(e.clientX, e.clientY);
+                    // Find element under cursor/finger
+                    const elementBelow = document.elementFromPoint(clientX, clientY);
                     const targetBubble = elementBelow?.closest('.bubble');
                     
                     // Remove drag-over from all bubbles
@@ -433,15 +454,22 @@
                         console.log('Hovering over position:', targetBubble.dataset.currentPosition);
                     }
                 }
+                
+                // Prevent scrolling on mobile
+                e.preventDefault();
             }
             
-            function handleMouseUp(e) {
+            function handleEnd(e) {
                 if (!isDragging) return;
                 
-                console.log('Mouse up - checking for drop');
+                console.log('Drag end - checking for drop');
                 
-                // Find element under mouse cursor
-                const elementBelow = document.elementFromPoint(e.clientX, e.clientY);
+                // Get coordinates from mouse or touch event
+                const clientX = e.type === 'touchend' ? e.changedTouches[0].clientX : e.clientX;
+                const clientY = e.type === 'touchend' ? e.changedTouches[0].clientY : e.clientY;
+                
+                // Find element under cursor/finger
+                const elementBelow = document.elementFromPoint(clientX, clientY);
                 const targetBubble = elementBelow?.closest('.bubble');
                 
                 if (targetBubble && targetBubble !== bubble) {
@@ -468,8 +496,14 @@
                 isDragging = false;
                 draggedIndex = null;
                 
-                document.removeEventListener('mousemove', handleMouseMove);
-                document.removeEventListener('mouseup', handleMouseUp);
+                // Remove event listeners
+                if (e.type === 'touchend') {
+                    document.removeEventListener('touchmove', handleMove);
+                    document.removeEventListener('touchend', handleEnd);
+                } else {
+                    document.removeEventListener('mousemove', handleMove);
+                    document.removeEventListener('mouseup', handleEnd);
+                }
             }
             
             // Prevent default click behavior during drag
