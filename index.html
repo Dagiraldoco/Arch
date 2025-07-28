@@ -78,6 +78,29 @@
             user-select: none;
         }
 
+        .drag-handle {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 20px;
+            background: rgba(112, 84, 62, 0.4);
+            border-radius: 50%;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .drag-handle:hover {
+            background: rgba(112, 84, 62, 0.6);
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
         .bubble:hover:not(.dragging) {
             transform: translateY(-5px) scale(1.05);
             box-shadow: 0 15px 40px rgba(43, 43, 43, 0.25);
@@ -93,7 +116,7 @@
         }
 
         .bubble.drag-over {
-            border: 2px dashed #228B22;
+            border: 4px dashed #228B22;
             background: linear-gradient(145deg, #8A9A5B 0%, #A9B388 100%);
         }
 
@@ -116,12 +139,7 @@
             padding: 5px;
             border-radius: 4px;
             background: rgba(255, 255, 255, 0.1);
-            cursor: grab;
             user-select: none;
-        }
-
-        .converter-header:active {
-            cursor: grabbing;
         }
 
         .converter-title {
@@ -304,13 +322,30 @@
                 if (originalIndex === 0) {
                     // Create feet/inches to cm converter for the first bubble (top-left)
                     createFeetInchesConverter(bubble);
-                } else if (originalIndex === 3) {
-                    // Create converter for the top-right bubble (4th position, index 3)
-                    createConverter(bubble);
+                    // Add drag handle after converter content
+                    const dragHandle = document.createElement('div');
+                    dragHandle.className = 'drag-handle';
+                    bubble.appendChild(dragHandle);
                 } else if (originalIndex === 1) {
-                    // Create temperature converter for the second bubble (index 1)
+                    // Create slope converter for the second bubble (index 1)
+                    createConverter(bubble);
+                    // Add drag handle after converter content
+                    const dragHandle = document.createElement('div');
+                    dragHandle.className = 'drag-handle';
+                    bubble.appendChild(dragHandle);
+                } else if (originalIndex === 11) {
+                    // Create temperature converter for the last bubble (index 11)
                     createTemperatureConverter(bubble);
+                    // Add drag handle after converter content
+                    const dragHandle = document.createElement('div');
+                    dragHandle.className = 'drag-handle';
+                    bubble.appendChild(dragHandle);
                 } else {
+                    // Add drag handle to word bubbles
+                    const dragHandle = document.createElement('div');
+                    dragHandle.className = 'drag-handle';
+                    bubble.appendChild(dragHandle);
+                    
                     // Create regular word bubble
                     const word = architectureWords[originalIndex];
                     const wordElement = document.createElement('div');
@@ -321,7 +356,7 @@
                     
                     // Add click event to perform Google "I'm Feeling Lucky" search
                     bubble.addEventListener('click', (e) => {
-                        if (!bubble.classList.contains('dragging')) {
+                        if (!bubble.classList.contains('dragging') && !e.target.closest('.drag-handle')) {
                             const searchQuery = `${word} architecture definition`;
                             const luckySearchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}&btnI=1`;
                             window.open(luckySearchUrl, '_blank');
@@ -355,16 +390,8 @@
             bubble.addEventListener('mousedown', (e) => {
                 if (e.button !== 0) return; // Only left mouse button
                 
-                // Allow drag only on word elements or converter headers, not on inputs/buttons
-                const isWordBubble = e.target.closest('.word');
-                const isConverterHeader = e.target.closest('.converter-header');
-                const isInteractiveElement = e.target.matches('input, button, .swap-btn');
-                
-                if (!isWordBubble && !isConverterHeader) {
-                    return;
-                }
-                
-                if (isInteractiveElement) {
+                // Only allow drag when clicking on the drag handle
+                if (!e.target.closest('.drag-handle')) {
                     return;
                 }
                 
