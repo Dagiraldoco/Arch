@@ -46,12 +46,27 @@
             backdrop-filter: blur(10px);
             border: 1px solid #A89F91;
             min-height: 120px;
+            position: relative;
+            user-select: none;
         }
 
-        .bubble:hover {
+        .bubble:hover:not(.dragging) {
             transform: translateY(-5px) scale(1.05);
             box-shadow: 0 15px 40px rgba(43, 43, 43, 0.25);
             background: linear-gradient(145deg, #EEDC82 0%, #DCDCDC 100%);
+        }
+
+        .bubble.dragging {
+            opacity: 0.3;
+            transform: scale(1.1);
+            z-index: 1000;
+            cursor: grabbing;
+            pointer-events: none;
+        }
+
+        .bubble.drag-over {
+            border: 2px dashed #228B22;
+            background: linear-gradient(145deg, #8A9A5B 0%, #A9B388 100%);
         }
 
         .bubble:active {
@@ -213,6 +228,10 @@
     </div>
 
     <script>
+        // Bubble order management
+        let bubbleOrder = JSON.parse(localStorage.getItem('bubbleOrder')) || Array.from({length: 12}, (_, i) => i);
+        let draggedIndex = null;
+
         // Set of 12 architecture words that you can easily change
         const architectureWords = [
             'Facade',
@@ -233,18 +252,26 @@
             const grid = document.getElementById('wordGrid');
             grid.innerHTML = ''; // Clear existing bubbles
 
-            architectureWords.forEach((word, index) => {
+            // Create bubbles in the saved order
+            bubbleOrder.forEach((originalIndex, currentPosition) => {
                 const bubble = document.createElement('div');
                 bubble.className = 'bubble';
+                bubble.draggable = true;
+                bubble.dataset.originalIndex = originalIndex;
+                bubble.dataset.currentPosition = currentPosition;
                 
-                if (index === 0) {
+                // Add drag event listeners
+                addDragListeners(bubble, currentPosition);
+                
+                if (originalIndex === 0) {
                     // Create feet/inches to cm converter for the first bubble (top-left)
                     createFeetInchesConverter(bubble);
-                } else if (index === 3) {
+                } else if (originalIndex === 3) {
                     // Create converter for the top-right bubble (4th position, index 3)
                     createConverter(bubble);
                 } else {
                     // Create regular word bubble
+                    const word = architectureWords[originalIndex];
                     const wordElement = document.createElement('div');
                     wordElement.className = 'word';
                     wordElement.textContent = word;
@@ -252,23 +279,79 @@
                     bubble.appendChild(wordElement);
                     
                     // Add click event to perform Google "I'm Feeling Lucky" search
-                    bubble.addEventListener('click', () => {
-                        const searchQuery = `${word} architecture definition`;
-                        const luckySearchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}&btnI=1`;
-                        window.open(luckySearchUrl, '_blank');
+                    bubble.addEventListener('click', (e) => {
+                        if (!bubble.classList.contains('dragging')) {
+                            const searchQuery = `${word} architecture definition`;
+                            const luckySearchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}&btnI=1`;
+                            window.open(luckySearchUrl, '_blank');
+                        }
                     });
 
                     // Add hover effect for better UX
                     bubble.addEventListener('mouseenter', () => {
-                        wordElement.style.color = '#5D473A';
+                        if (!bubble.classList.contains('dragging')) {
+                            wordElement.style.color = '#5D473A';
+                        }
                     });
 
                     bubble.addEventListener('mouseleave', () => {
-                        wordElement.style.color = '#70543E';
+                        if (!bubble.classList.contains('dragging')) {
+                            wordElement.style.color = '#70543E';
+                        }
                     });
                 }
 
                 grid.appendChild(bubble);
+            });
+        }
+
+        function addDragListeners(bubble, position) {
+            bubble.addEventListener('dragstart', (e) => {
+                draggedIndex = position;
+                bubble.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/html', bubble.outerHTML);
+            });
+
+            bubble.addEventListener('dragend', (e) => {
+                bubble.classList.remove('dragging');
+                draggedIndex = null;
+                // Remove drag-over class from all bubbles
+                document.querySelectorAll('.bubble').forEach(b => b.classList.remove('drag-over'));
+            });
+
+            bubble.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+            });
+
+            bubble.addEventListener('dragenter', (e) => {
+                e.preventDefault();
+                if (draggedIndex !== null && draggedIndex !== position) {
+                    bubble.classList.add('drag-over');
+                }
+            });
+
+            bubble.addEventListener('dragleave', (e) => {
+                bubble.classList.remove('drag-over');
+            });
+
+            bubble.addEventListener('drop', (e) => {
+                e.preventDefault();
+                bubble.classList.remove('drag-over');
+                
+                if (draggedIndex !== null && draggedIndex !== position) {
+                    // Swap the positions in the bubbleOrder array
+                    const temp = bubbleOrder[draggedIndex];
+                    bubbleOrder[draggedIndex] = bubbleOrder[position];
+                    bubbleOrder[position] = temp;
+                    
+                    // Save to localStorage
+                    localStorage.setItem('bubbleOrder', JSON.stringify(bubbleOrder));
+                    
+                    // Recreate bubbles with new order
+                    createBubbles();
+                }
             });
         }
 
