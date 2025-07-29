@@ -120,14 +120,64 @@
             background: linear-gradient(145deg, #8A9A5B 0%, #A9B388 100%);
         }
 
+        /* Custom styles for the feet/inches converter (originalIndex 0) */
         .bubble.converter-feet {
-            background: linear-gradient(145deg, #C5B47F 0%, #A89F91 100%);
-            border: 1px solid #8C7B75;
+            background: linear-gradient(145deg, #FF6B6B 0%, #FF8E8E 100%);
+            border: 2px solid #E55555;
+            box-shadow: 0 8px 32px rgba(255, 107, 107, 0.3);
         }
 
+        .bubble.converter-feet:hover:not(.dragging) {
+            background: linear-gradient(145deg, #FF5252 0%, #FF7A7A 100%);
+            box-shadow: 0 15px 40px rgba(255, 107, 107, 0.4);
+        }
+
+        .bubble.converter-feet .drag-handle {
+            background: rgba(230, 57, 70, 0.6);
+        }
+
+        .bubble.converter-feet .drag-handle:hover {
+            background: rgba(230, 57, 70, 0.8);
+        }
+
+        /* Custom styles for the slope converter (originalIndex 1) */
         .bubble.converter-slope {
-            background: linear-gradient(145deg, #8A9A5B 0%, #7C8471 100%);
-            border: 1px solid #6B7259;
+            background: linear-gradient(145deg, #4ECDC4 0%, #7FDDDD 100%);
+            border: 2px solid #3BA99C;
+            box-shadow: 0 8px 32px rgba(78, 205, 196, 0.3);
+        }
+
+        .bubble.converter-slope:hover:not(.dragging) {
+            background: linear-gradient(145deg, #39C2BA 0%, #6BD4D4 100%);
+            box-shadow: 0 15px 40px rgba(78, 205, 196, 0.4);
+        }
+
+        .bubble.converter-slope .drag-handle {
+            background: rgba(59, 169, 156, 0.6);
+        }
+
+        .bubble.converter-slope .drag-handle:hover {
+            background: rgba(59, 169, 156, 0.8);
+        }
+
+        /* Custom styles for the temperature converter (originalIndex 11) */
+        .bubble.converter-temp {
+            background: linear-gradient(145deg, #FFD93D 0%, #FFF176 100%);
+            border: 2px solid #FBC02D;
+            box-shadow: 0 8px 32px rgba(255, 217, 61, 0.3);
+        }
+
+        .bubble.converter-temp:hover:not(.dragging) {
+            background: linear-gradient(145deg, #FFCD02 0%, #FFE082 100%);
+            box-shadow: 0 15px 40px rgba(255, 217, 61, 0.4);
+        }
+
+        .bubble.converter-temp .drag-handle {
+            background: rgba(251, 192, 45, 0.6);
+        }
+
+        .bubble.converter-temp .drag-handle:hover {
+            background: rgba(251, 192, 45, 0.8);
         }
 
         .bubble:active {
