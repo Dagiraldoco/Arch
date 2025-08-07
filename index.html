@@ -160,6 +160,26 @@
             background: rgba(59, 169, 156, 0.8);
         }
 
+        /* Custom styles for the scale converter (originalIndex 2) */
+        .bubble.converter-scale {
+            background: linear-gradient(145deg, #9C27B0 0%, #BA68C8 100%);
+            border: 2px solid #7B1FA2;
+            box-shadow: 0 8px 32px rgba(156, 39, 176, 0.3);
+        }
+
+        .bubble.converter-scale:hover:not(.dragging) {
+            background: linear-gradient(145deg, #8E24AA 0%, #AB47BC 100%);
+            box-shadow: 0 15px 40px rgba(156, 39, 176, 0.4);
+        }
+
+        .bubble.converter-scale .drag-handle {
+            background: rgba(123, 31, 162, 0.6);
+        }
+
+        .bubble.converter-scale .drag-handle:hover {
+            background: rgba(123, 31, 162, 0.8);
+        }
+
         /* Custom styles for the temperature converter (originalIndex 11) */
         .bubble.converter-temp {
             background: linear-gradient(145deg, #FFD93D 0%, #FFF176 100%);
@@ -228,6 +248,21 @@
             align-items: center;
             gap: 5px;
             flex-wrap: wrap;
+        }
+
+        .input-group select {
+            flex: 1;
+            padding: 6px 8px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            background: white;
+            cursor: pointer;
+        }
+
+        .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
         }
 
         .input-group input {
@@ -390,6 +425,14 @@
                     // Create slope converter for the second bubble (index 1)
                     bubble.classList.add('converter-slope');
                     createConverter(bubble);
+                    // Add drag handle after converter content
+                    const dragHandle = document.createElement('div');
+                    dragHandle.className = 'drag-handle';
+                    bubble.appendChild(dragHandle);
+                } else if (originalIndex === 2) {
+                    // Create scale converter for the third bubble (index 2)
+                    bubble.classList.add('converter-scale');
+                    createScaleConverter(bubble);
                     // Add drag handle after converter content
                     const dragHandle = document.createElement('div');
                     dragHandle.className = 'drag-handle';
@@ -723,10 +766,10 @@
             }
 
             function calculateMetricToImperial() {
-                const cmInput = bubble.querySelector('#cmInput');
                 const mInput = bubble.querySelector('#mInput');
-                const cm = parseFloat(cmInput?.value) || 0;
+                const cmInput = bubble.querySelector('#cmInput');
                 const m = parseFloat(mInput?.value) || 0;
+                const cm = parseFloat(cmInput?.value) || 0;
                 
                 // Convert everything to centimeters first
                 const totalCm = cm + (m * 100);
@@ -796,10 +839,10 @@
                     // Metric to Imperial mode
                     converterTitle.textContent = 'cm/m → ft/in';
                     inputContainer.innerHTML = `
-                        <input type="number" id="cmInput" placeholder="0" min="0" step="0.1">
-                        <span class="input-label">cm</span>
                         <input type="number" id="mInput" placeholder="0" min="0" step="0.001">
                         <span class="input-label">m</span>
+                        <input type="number" id="cmInput" placeholder="0" min="0" step="0.1">
+                        <span class="input-label">cm</span>
                     `;
                     firstResultLabel.textContent = 'Feet & Inches:';
                     secondResultLabel.textContent = 'Total Inches:';
@@ -807,8 +850,8 @@
                     secondResultValue.textContent = '0.00"';
                     
                     // Add event listeners for metric inputs
-                    bubble.querySelector('#cmInput').addEventListener('input', calculateMetricToImperial);
                     bubble.querySelector('#mInput').addEventListener('input', calculateMetricToImperial);
+                    bubble.querySelector('#cmInput').addEventListener('input', calculateMetricToImperial);
                 }
             }
 
@@ -816,6 +859,142 @@
             bubble.querySelector('#feetInput').addEventListener('input', calculateImperialToMetric);
             bubble.querySelector('#inchesInput').addEventListener('input', calculateImperialToMetric);
             swapBtnFeet.addEventListener('click', swapMode);
+        }
+
+        function createScaleConverter(bubble) {
+            bubble.innerHTML = `
+                <div class="converter">
+                    <div class="converter-header">
+                        <span class="converter-title">Scale Converter</span>
+                    </div>
+                    <div class="input-group">
+                        <select id="scaleSelect">
+                            <option value="1:5">1:5</option>
+                            <option value="1:10">1:10</option>
+                            <option value="1:20">1:20</option>
+                            <option value="1:50">1:50</option>
+                            <option value="1:75">1:75</option>
+                            <option value="1:100">1:100</option>
+                            <option value="1:200">1:200</option>
+                            <option value="1:500">1:500</option>
+                            <option value="1:1000">1:1000</option>
+                            <option value="1:12">1:12 (1" = 1')</option>
+                            <option value="1:24">1:24 (1/2" = 1')</option>
+                            <option value="1:48">1:48 (1/4" = 1')</option>
+                            <option value="1:96">1:96 (1/8" = 1')</option>
+                            <option value="1:192">1:192 (1/16" = 1')</option>
+                            <option value="1:384">1:384 (1/32" = 1')</option>
+                            <option value="1:768">1:768 (1/64" = 1')</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <input type="number" id="realSizeInput" placeholder="0" min="0" step="0.001">
+                        <span class="input-label" id="realSizeLabel">m (real)</span>
+                    </div>
+                    <div class="input-group">
+                        <input type="number" id="paperSizeInput" placeholder="0" min="0" step="0.1">
+                        <span class="input-label" id="paperSizeLabel">mm (paper)</span>
+                    </div>
+                </div>
+            `;
+
+            const scaleSelect = bubble.querySelector('#scaleSelect');
+            const realSizeInput = bubble.querySelector('#realSizeInput');
+            const paperSizeInput = bubble.querySelector('#paperSizeInput');
+            const realSizeLabel = bubble.querySelector('#realSizeLabel');
+            const paperSizeLabel = bubble.querySelector('#paperSizeLabel');
+
+            function isImperialScale() {
+                const imperialScales = ['1:12', '1:24', '1:48', '1:96', '1:192', '1:384', '1:768'];
+                return imperialScales.includes(scaleSelect.value);
+            }
+
+            function updateUnits() {
+                if (isImperialScale()) {
+                    realSizeLabel.textContent = 'ft (real)';
+                    paperSizeLabel.textContent = 'in (paper)';
+                    realSizeInput.step = '0.01';
+                    paperSizeInput.step = '0.01';
+                } else {
+                    realSizeLabel.textContent = 'm (real)';
+                    paperSizeLabel.textContent = 'mm (paper)';
+                    realSizeInput.step = '0.001';
+                    paperSizeInput.step = '0.1';
+                }
+            }
+
+            function getScaleRatio() {
+                const scaleValue = scaleSelect.value;
+                const ratio = scaleValue.split(':');
+                const numerator = parseFloat(ratio[0]);
+                const denominator = parseFloat(ratio[1]);
+                
+                return denominator / numerator;
+            }
+
+            function calculateFromReal() {
+                const realSize = parseFloat(realSizeInput.value) || 0;
+                const scaleRatio = getScaleRatio();
+                
+                let paperSize;
+                
+                if (isImperialScale()) {
+                    // Convert real size (feet) to paper size (inches)
+                    // Real size in feet * 12 (to inches) / scale ratio
+                    paperSize = (realSize * 12) / scaleRatio;
+                } else {
+                    // Convert real size (meters) to paper size (millimeters)
+                    // Real size in meters * 1000 (to mm) / scale ratio
+                    paperSize = (realSize * 1000) / scaleRatio;
+                }
+                
+                paperSizeInput.value = paperSize.toFixed(2);
+            }
+
+            function calculateFromPaper() {
+                const paperSize = parseFloat(paperSizeInput.value) || 0;
+                const scaleRatio = getScaleRatio();
+                
+                let realSize;
+                
+                if (isImperialScale()) {
+                    // Convert paper size (inches) to real size (feet)
+                    // Paper size in inches * scale ratio / 12 (to feet)
+                    realSize = (paperSize * scaleRatio) / 12;
+                } else {
+                    // Convert paper size (millimeters) to real size (meters)
+                    // Paper size in mm * scale ratio / 1000 (to meters)
+                    realSize = (paperSize * scaleRatio) / 1000;
+                }
+                
+                realSizeInput.value = realSize.toFixed(3);
+            }
+
+            // Event listeners
+            realSizeInput.addEventListener('input', calculateFromReal);
+            paperSizeInput.addEventListener('input', calculateFromPaper);
+            scaleSelect.addEventListener('change', () => {
+                // Clear inputs when switching between metric and imperial
+                const wasImperial = realSizeLabel.textContent.includes('ft');
+                const isNowImperial = isImperialScale();
+                
+                if (wasImperial !== isNowImperial) {
+                    realSizeInput.value = '';
+                    paperSizeInput.value = '';
+                }
+                
+                updateUnits();
+                
+                // Recalculate if there are values after unit change
+                if (realSizeInput.value) {
+                    calculateFromReal();
+                } else if (paperSizeInput.value) {
+                    calculateFromPaper();
+                }
+            });
+
+            // Initialize units
+            updateUnits();
         }
 
         function createTemperatureConverter(bubble) {
