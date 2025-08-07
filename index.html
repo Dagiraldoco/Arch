@@ -13,35 +13,15 @@
 
         body {
             font-family: 'Arial', sans-serif;
-            background: #2B2B2B;
+            background: #2e2a2a;
             background-image: 
-                /* Very thin lines in multiple directions */
-                linear-gradient(0deg, rgba(245, 245, 245, 0.08) 1px, transparent 1px),
-                linear-gradient(30deg, rgba(245, 245, 245, 0.06) 1px, transparent 1px),
-                linear-gradient(60deg, rgba(245, 245, 245, 0.07) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(245, 245, 245, 0.08) 1px, transparent 1px),
-                linear-gradient(120deg, rgba(245, 245, 245, 0.06) 1px, transparent 1px),
-                linear-gradient(150deg, rgba(245, 245, 245, 0.07) 1px, transparent 1px),
-                linear-gradient(45deg, rgba(245, 245, 245, 0.05) 1px, transparent 1px),
-                linear-gradient(135deg, rgba(245, 245, 245, 0.05) 1px, transparent 1px);
+                /* Horizontal lines */
+                linear-gradient(0deg, rgba(245, 245, 245, 0.1) 1px, transparent 1px),
+                /* Vertical lines */
+                linear-gradient(90deg, rgba(245, 245, 245, 0.1) 1px, transparent 1px);
             background-size: 
                 40px 40px,
-                60px 60px,
-                50px 50px,
-                35px 35px,
-                70px 70px,
-                45px 45px,
-                80px 80px,
-                55px 55px;
-            background-position:
-                0 0,
-                10px 10px,
-                20px 5px,
-                5px 15px,
-                30px 20px,
-                15px 25px,
-                40px 0px,
-                25px 35px;
+                40px 40px;
             min-height: 100vh;
             padding: 20px;
             display: flex;
