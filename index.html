@@ -160,6 +160,26 @@
             background: rgba(123, 31, 162, 0.8);
         }
 
+        /* Custom styles for the area converter (originalIndex 3) */
+        .bubble.converter-area {
+            background: linear-gradient(145deg, #FF9800 0%, #FFB74D 100%);
+            border: 2px solid #F57C00;
+            box-shadow: 0 8px 32px rgba(255, 152, 0, 0.3);
+        }
+
+        .bubble.converter-area:hover:not(.dragging) {
+            background: linear-gradient(145deg, #FB8C00 0%, #FFA726 100%);
+            box-shadow: 0 15px 40px rgba(255, 152, 0, 0.4);
+        }
+
+        .bubble.converter-area .drag-handle {
+            background: rgba(245, 124, 0, 0.6);
+        }
+
+        .bubble.converter-area .drag-handle:hover {
+            background: rgba(245, 124, 0, 0.8);
+        }
+
         /* Custom styles for the temperature converter (originalIndex 11) */
         .bubble.converter-temp {
             background: linear-gradient(145deg, #FFD93D 0%, #FFF176 100%);
@@ -413,6 +433,14 @@
                     // Create scale converter for the third bubble (index 2)
                     bubble.classList.add('converter-scale');
                     createScaleConverter(bubble);
+                    // Add drag handle after converter content
+                    const dragHandle = document.createElement('div');
+                    dragHandle.className = 'drag-handle';
+                    bubble.appendChild(dragHandle);
+                } else if (originalIndex === 3) {
+                    // Create area converter for the fourth bubble (index 3)
+                    bubble.classList.add('converter-area');
+                    createAreaConverter(bubble);
                     // Add drag handle after converter content
                     const dragHandle = document.createElement('div');
                     dragHandle.className = 'drag-handle';
@@ -975,6 +1003,79 @@
 
             // Initialize units
             updateUnits();
+        }
+
+        function createAreaConverter(bubble) {
+            let isSqFtToSqM = true; // Track current mode
+            
+            bubble.innerHTML = `
+                <div class="converter">
+                    <div class="converter-header">
+                        <span class="converter-title">ft² to m²</span>
+                        <button class="swap-btn" id="swapBtnArea">⇄</button>
+                    </div>
+                    <div class="input-group">
+                        <input type="number" id="areaInput" placeholder="0" min="0" step="0.01">
+                        <span class="input-label" id="areaInputLabel">ft²</span>
+                    </div>
+                    <div class="results">
+                        <div class="result-item">
+                            <span class="result-label" id="areaResultLabel">Square Meters:</span>
+                            <span class="result-value" id="areaResultValue">0.00 m²</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const areaInput = bubble.querySelector('#areaInput');
+            const areaInputLabel = bubble.querySelector('#areaInputLabel');
+            const areaResultLabel = bubble.querySelector('#areaResultLabel');
+            const areaResultValue = bubble.querySelector('#areaResultValue');
+            const swapBtnArea = bubble.querySelector('#swapBtnArea');
+            const converterTitle = bubble.querySelector('.converter-title');
+
+            function calculateSqFtToSqM() {
+                const sqFt = parseFloat(areaInput.value) || 0;
+                // 1 square foot = 0.092903 square meters
+                const sqM = sqFt * 0.092903;
+                
+                areaResultValue.textContent = `${sqM.toFixed(3)} m²`;
+            }
+
+            function calculateSqMToSqFt() {
+                const sqM = parseFloat(areaInput.value) || 0;
+                // 1 square meter = 10.7639 square feet
+                const sqFt = sqM * 10.7639;
+                
+                areaResultValue.textContent = `${sqFt.toFixed(2)} ft²`;
+            }
+
+            function swapAreaMode() {
+                isSqFtToSqM = !isSqFtToSqM;
+                areaInput.value = '';
+                
+                if (isSqFtToSqM) {
+                    converterTitle.textContent = 'ft² to m²';
+                    areaInputLabel.textContent = 'ft²';
+                    areaResultLabel.textContent = 'Square Meters:';
+                    areaResultValue.textContent = '0.000 m²';
+                    
+                    areaInput.removeEventListener('input', calculateSqMToSqFt);
+                    areaInput.addEventListener('input', calculateSqFtToSqM);
+                } else {
+                    converterTitle.textContent = 'm² to ft²';
+                    areaInputLabel.textContent = 'm²';
+                    areaResultLabel.textContent = 'Square Feet:';
+                    areaResultValue.textContent = '0.00 ft²';
+                    
+                    areaInput.removeEventListener('input', calculateSqFtToSqM);
+                    areaInput.addEventListener('input', calculateSqMToSqFt);
+                }
+            }
+
+            // Initialize with square feet to square meters
+            areaInput.addEventListener('input', calculateSqFtToSqM);
+            swapBtnArea.addEventListener('click', swapAreaMode);
         }
 
         function createTemperatureConverter(bubble) {
