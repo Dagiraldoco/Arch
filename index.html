@@ -200,6 +200,54 @@
             background: rgba(251, 192, 45, 0.8);
         }
 
+        .bubble.ping-pong {
+            background: linear-gradient(145deg, #1E3C72 0%, #2A5298 100%);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px rgba(30, 60, 114, 0.35);
+            justify-content: flex-start;
+            align-items: center;
+            padding: 18px 18px 56px;
+            overflow: hidden;
+        }
+
+        .bubble.ping-pong .drag-handle {
+            background: rgba(255, 255, 255, 0.35);
+        }
+
+        .bubble.ping-pong .drag-handle:hover {
+            background: rgba(255, 255, 255, 0.55);
+        }
+
+        .ping-pong-wrapper {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .ping-pong-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #F5F5F5;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .ping-pong-wrapper canvas {
+            width: 100%;
+            border-radius: 14px;
+            background: #0f172a;
+            box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.5);
+        }
+
+        .ping-pong-info {
+            font-size: 0.75rem;
+            color: rgba(245, 245, 245, 0.85);
+            text-align: center;
+            line-height: 1.4;
+        }
+
         .bubble:active {
             transform: translateY(-2px) scale(1.02);
         }
@@ -381,6 +429,7 @@
         // Bubble order management (in-memory storage)
         let bubbleOrder = Array.from({length: 12}, (_, i) => i);
         let draggedIndex = null;
+        let pingPongCleanup = null;
 
         // Set of 12 architecture words that you can easily change
         const architectureWords = [
@@ -442,6 +491,12 @@
                     bubble.classList.add('converter-area');
                     createAreaConverter(bubble);
                     // Add drag handle after converter content
+                    const dragHandle = document.createElement('div');
+                    dragHandle.className = 'drag-handle';
+                    bubble.appendChild(dragHandle);
+                } else if (originalIndex === 8) {
+                    bubble.classList.add('ping-pong');
+                    createPingPongGame(bubble);
                     const dragHandle = document.createElement('div');
                     dragHandle.className = 'drag-handle';
                     bubble.appendChild(dragHandle);
@@ -1007,7 +1062,7 @@
 
         function createAreaConverter(bubble) {
             let isSqFtToSqM = true; // Track current mode
-            
+
             bubble.innerHTML = `
                 <div class="converter">
                     <div class="converter-header">
@@ -1076,6 +1131,155 @@
             // Initialize with square feet to square meters
             areaInput.addEventListener('input', calculateSqFtToSqM);
             swapBtnArea.addEventListener('click', swapAreaMode);
+        }
+
+        function createPingPongGame(bubble) {
+            if (typeof pingPongCleanup === 'function') {
+                pingPongCleanup();
+                pingPongCleanup = null;
+            }
+
+            bubble.innerHTML = `
+                <div class="ping-pong-wrapper">
+                    <div class="ping-pong-title">Loggia Pong</div>
+                    <canvas class="ping-pong-canvas" width="320" height="180"></canvas>
+                    <div class="ping-pong-info">Move the paddle with your mouse or touch to keep the ball in play.</div>
+                </div>
+            `;
+
+            const canvas = bubble.querySelector('.ping-pong-canvas');
+            const ctx = canvas.getContext('2d');
+
+            const paddleWidth = 12;
+            const paddleHeight = 42;
+            const paddleOffset = 12;
+            const ballRadius = 6;
+            let playerY = (canvas.height - paddleHeight) / 2;
+            let aiY = playerY;
+            let ballX = canvas.width / 2;
+            let ballY = canvas.height / 2;
+            let ballSpeedX = 3;
+            let ballSpeedY = 2;
+            let playerScore = 0;
+            let aiScore = 0;
+            let animationId = null;
+
+            function clamp(value, min, max) {
+                return Math.min(Math.max(value, min), max);
+            }
+
+            function movePlayer(clientY) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleY = canvas.height / rect.height;
+                const targetY = (clientY - rect.top) * scaleY - paddleHeight / 2;
+                playerY = clamp(targetY, 0, canvas.height - paddleHeight);
+            }
+
+            canvas.addEventListener('mousemove', (event) => {
+                movePlayer(event.clientY);
+            });
+
+            canvas.addEventListener('touchstart', (event) => {
+                movePlayer(event.touches[0].clientY);
+                event.preventDefault();
+            }, { passive: false });
+
+            canvas.addEventListener('touchmove', (event) => {
+                movePlayer(event.touches[0].clientY);
+                event.preventDefault();
+            }, { passive: false });
+
+            function resetBall(direction = 1) {
+                ballX = canvas.width / 2;
+                ballY = canvas.height / 2;
+                ballSpeedX = 3 * direction;
+                ballSpeedY = (Math.random() * 2 - 1) * 2.5;
+            }
+
+            function drawTable() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+                ctx.setLineDash([6, 6]);
+                ctx.beginPath();
+                ctx.moveTo(canvas.width / 2, 0);
+                ctx.lineTo(canvas.width / 2, canvas.height);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(paddleOffset, playerY, paddleWidth, paddleHeight);
+                ctx.fillRect(canvas.width - paddleOffset - paddleWidth, aiY, paddleWidth, paddleHeight);
+
+                ctx.beginPath();
+                ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '16px "Arial", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(playerScore, canvas.width * 0.25, 24);
+                ctx.fillText(aiScore, canvas.width * 0.75, 24);
+            }
+
+            function updatePositions() {
+                ballX += ballSpeedX;
+                ballY += ballSpeedY;
+
+                if (ballY - ballRadius <= 0 || ballY + ballRadius >= canvas.height) {
+                    ballSpeedY = -ballSpeedY;
+                }
+
+                if (ballX - ballRadius <= paddleOffset + paddleWidth) {
+                    if (ballY >= playerY && ballY <= playerY + paddleHeight) {
+                        ballSpeedX = Math.abs(ballSpeedX);
+                        const collidePoint = (ballY - (playerY + paddleHeight / 2)) / (paddleHeight / 2);
+                        ballSpeedY = collidePoint * 2.5;
+                    } else if (ballX - ballRadius < 0) {
+                        aiScore += 1;
+                        resetBall(1);
+                    }
+                }
+
+                if (ballX + ballRadius >= canvas.width - paddleOffset - paddleWidth) {
+                    if (ballY >= aiY && ballY <= aiY + paddleHeight) {
+                        ballSpeedX = -Math.abs(ballSpeedX);
+                        const collidePoint = (ballY - (aiY + paddleHeight / 2)) / (paddleHeight / 2);
+                        ballSpeedY = collidePoint * 2.5;
+                    } else if (ballX + ballRadius > canvas.width) {
+                        playerScore += 1;
+                        resetBall(-1);
+                    }
+                }
+
+                const aiCenter = aiY + paddleHeight / 2;
+                if (aiCenter < ballY - 10) {
+                    aiY += 2.2;
+                } else if (aiCenter > ballY + 10) {
+                    aiY -= 2.2;
+                }
+                aiY = clamp(aiY, 0, canvas.height - paddleHeight);
+            }
+
+            function gameLoop() {
+                updatePositions();
+                drawTable();
+                animationId = requestAnimationFrame(gameLoop);
+            }
+
+            resetBall();
+            drawTable();
+            animationId = requestAnimationFrame(gameLoop);
+
+            pingPongCleanup = () => {
+                if (animationId !== null) {
+                    cancelAnimationFrame(animationId);
+                }
+                pingPongCleanup = null;
+            };
         }
 
         function createTemperatureConverter(bubble) {
