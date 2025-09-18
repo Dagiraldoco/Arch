@@ -180,6 +180,152 @@
             background: rgba(245, 124, 0, 0.8);
         }
 
+        /* Custom styles for the stretch stopwatch (originalIndex 4) */
+        .bubble.stretch-bubble {
+            background: linear-gradient(145deg, #1f3b73 0%, #29a1c4 100%);
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            box-shadow: 0 10px 40px rgba(41, 161, 196, 0.35);
+            justify-content: flex-start;
+            align-items: stretch;
+            padding: 18px 18px 56px;
+        }
+
+        .bubble.stretch-bubble:hover:not(.dragging) {
+            background: linear-gradient(145deg, #24468c 0%, #32b8db 100%);
+            box-shadow: 0 16px 45px rgba(41, 161, 196, 0.5);
+        }
+
+        .stretch-timer {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            width: 100%;
+            color: #f7fafc;
+            padding-bottom: 16px;
+        }
+
+        .stretch-header {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .stretch-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .stretch-description {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
+        .stretch-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+        }
+
+        .stretch-field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stretch-field span {
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .stretch-field input {
+            width: 100%;
+            border: none;
+            border-radius: 10px;
+            padding: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #1a202c;
+            background: rgba(255, 255, 255, 0.92);
+            box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.2);
+        }
+
+        .stretch-field input:focus {
+            outline: 2px solid rgba(255, 255, 255, 0.7);
+        }
+
+        .stretch-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .stretch-timeline-line {
+            position: relative;
+            width: 100%;
+            height: 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.25);
+            overflow: hidden;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+        }
+
+        .stretch-timeline-pointer {
+            position: absolute;
+            top: 50%;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 2px solid rgba(31, 59, 115, 0.4);
+            box-shadow: 0 4px 8px rgba(17, 24, 39, 0.35);
+            transform: translate(-50%, -50%);
+            transition: left 0.1s linear;
+        }
+
+        .stretch-status {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+            padding: 8px 10px;
+            border-radius: 999px;
+            background: rgba(15, 32, 60, 0.45);
+            box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.3);
+        }
+
+        .stretch-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .stretch-btn {
+            flex: 1;
+            padding: 8px 0;
+            border: none;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.92);
+            color: #1a202c;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        .stretch-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(15, 23, 42, 0.3);
+            background: #ffffff;
+        }
+
+        .stretch-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 3px 8px rgba(15, 23, 42, 0.2);
+        }
+
         /* Custom styles for the temperature converter (originalIndex 11) */
         .bubble.converter-temp {
             background: linear-gradient(145deg, #FFD93D 0%, #FFF176 100%);
@@ -344,8 +490,16 @@
                 min-height: 80px;
             }
 
+            .bubble.stretch-bubble {
+                padding: 16px 16px 52px;
+            }
+
             .word {
                 font-size: 1rem;
+            }
+
+            .stretch-inputs {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
             }
 
             .title {
@@ -366,6 +520,10 @@
             .word {
                 font-size: 0.9rem;
             }
+
+            .stretch-inputs {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -381,6 +539,7 @@
         // Bubble order management (in-memory storage)
         let bubbleOrder = Array.from({length: 12}, (_, i) => i);
         let draggedIndex = null;
+        let stretchAudioContext = null;
 
         // Set of 12 architecture words that you can easily change
         const architectureWords = [
@@ -442,6 +601,13 @@
                     bubble.classList.add('converter-area');
                     createAreaConverter(bubble);
                     // Add drag handle after converter content
+                    const dragHandle = document.createElement('div');
+                    dragHandle.className = 'drag-handle';
+                    bubble.appendChild(dragHandle);
+                } else if (originalIndex === 4) {
+                    // Create stretch stopwatch for the fifth bubble (index 4)
+                    bubble.classList.add('stretch-bubble');
+                    createStretchTimer(bubble);
                     const dragHandle = document.createElement('div');
                     dragHandle.className = 'drag-handle';
                     bubble.appendChild(dragHandle);
@@ -1005,9 +1171,522 @@
             updateUnits();
         }
 
+        function createStretchTimer(bubble) {
+            bubble.innerHTML = `
+                <div class="stretch-timer">
+                    <div class="stretch-header">
+                        <span class="stretch-title">Stretch Stopwatch</span>
+                        <span class="stretch-description">Customize your stretching and rest intervals</span>
+                    </div>
+                    <div class="stretch-inputs">
+                        <label class="stretch-field">
+                            <span>Stretch (s)</span>
+                            <input type="number" id="stretchDurationInput" min="0" step="1" value="30">
+                        </label>
+                        <label class="stretch-field">
+                            <span>Rest (s)</span>
+                            <input type="number" id="restDurationInput" min="0" step="1" value="5">
+                        </label>
+                        <label class="stretch-field">
+                            <span>Sets</span>
+                            <input type="number" id="stretchSetInput" min="1" step="1" value="3">
+                        </label>
+                    </div>
+                    <div class="stretch-timeline">
+                        <div class="stretch-timeline-line" id="stretchTimelineLine">
+                            <div class="stretch-timeline-pointer" id="stretchTimelinePointer"></div>
+                        </div>
+                    </div>
+                    <div class="stretch-status" id="stretchStatus">Ready to stretch</div>
+                    <div class="stretch-controls">
+                        <button class="stretch-btn" id="stretchStartPause">Start</button>
+                        <button class="stretch-btn" id="stretchRestart">Restart</button>
+                    </div>
+                </div>
+            `;
+
+            const stretchDurationInput = bubble.querySelector('#stretchDurationInput');
+            const restDurationInput = bubble.querySelector('#restDurationInput');
+            const stretchSetInput = bubble.querySelector('#stretchSetInput');
+            const timelineLine = bubble.querySelector('#stretchTimelineLine');
+            const timelinePointer = bubble.querySelector('#stretchTimelinePointer');
+            const statusDisplay = bubble.querySelector('#stretchStatus');
+            const startPauseButton = bubble.querySelector('#stretchStartPause');
+            const restartButton = bubble.querySelector('#stretchRestart');
+
+            let timerState = 'idle';
+            let phases = [];
+            let currentPhaseIndex = -1;
+            let phaseRemaining = 0;
+            let lastTimestamp = null;
+            let animationFrameId = null;
+            let elapsedWorkoutTime = 0;
+            let workoutTotal = 0;
+            let audioReady = false;
+
+            const defaultReadyMessage = 'Ready to stretch';
+
+            function getSettings() {
+                const stretchValue = parseFloat(stretchDurationInput.value);
+                const restValue = parseFloat(restDurationInput.value);
+                const setValue = parseInt(stretchSetInput.value, 10);
+
+                return {
+                    stretch: Number.isFinite(stretchValue) ? Math.max(0, stretchValue) : 0,
+                    rest: Number.isFinite(restValue) ? Math.max(0, restValue) : 0,
+                    sets: Number.isFinite(setValue) ? Math.max(0, setValue) : 0
+                };
+            }
+
+            function sanitizeSettings() {
+                if (stretchDurationInput.value.trim() !== '') {
+                    const value = parseFloat(stretchDurationInput.value);
+                    if (!Number.isFinite(value) || value < 0) {
+                        stretchDurationInput.value = 0;
+                    }
+                }
+
+                if (restDurationInput.value.trim() !== '') {
+                    const value = parseFloat(restDurationInput.value);
+                    if (!Number.isFinite(value) || value < 0) {
+                        restDurationInput.value = 0;
+                    }
+                }
+
+                if (stretchSetInput.value.trim() !== '') {
+                    let value = parseInt(stretchSetInput.value, 10);
+                    if (!Number.isFinite(value)) {
+                        value = 1;
+                    }
+                    if (value < 1) {
+                        value = 1;
+                    }
+                    stretchSetInput.value = value;
+                }
+            }
+
+            function updateTimelineVisuals(providedSettings) {
+                const settings = providedSettings || getSettings();
+                const stretchSeconds = settings.stretch;
+                const restSeconds = settings.rest;
+                const setCount = settings.sets;
+                const restIntervals = Math.max(0, setCount - 1);
+                const stretchColor = 'rgba(84, 214, 155, 0.95)';
+                const restColor = 'rgba(255, 255, 255, 0.45)';
+
+                workoutTotal = (stretchSeconds * setCount) + (restSeconds * restIntervals);
+
+                if (workoutTotal <= 0) {
+                    timelineLine.style.background = 'rgba(255, 255, 255, 0.25)';
+                    updatePointer();
+                    return;
+                }
+
+                const segments = [];
+                let cursor = 0;
+
+                for (let i = 0; i < setCount; i++) {
+                    if (stretchSeconds > 0) {
+                        const start = cursor;
+                        cursor += stretchSeconds;
+                        segments.push({ start, end: cursor, color: stretchColor });
+                    } else {
+                        cursor += stretchSeconds;
+                    }
+
+                    if (i < setCount - 1 && restSeconds > 0) {
+                        const start = cursor;
+                        cursor += restSeconds;
+                        segments.push({ start, end: cursor, color: restColor });
+                    } else if (i < setCount - 1) {
+                        cursor += restSeconds;
+                    }
+                }
+
+                if (segments.length === 0) {
+                    timelineLine.style.background = 'rgba(255, 255, 255, 0.25)';
+                } else {
+                    const gradientStops = segments.map(segment => {
+                        const startPercent = (segment.start / workoutTotal) * 100;
+                        const endPercent = (segment.end / workoutTotal) * 100;
+                        return `${segment.color} ${startPercent}% ${endPercent}%`;
+                    }).join(', ');
+                    timelineLine.style.background = `linear-gradient(to right, ${gradientStops})`;
+                }
+
+                if (elapsedWorkoutTime > workoutTotal) {
+                    elapsedWorkoutTime = workoutTotal;
+                }
+
+                updatePointer();
+            }
+
+            function updatePointer() {
+                if (workoutTotal <= 0) {
+                    timelinePointer.style.left = '0%';
+                    return;
+                }
+
+                const clampedTime = Math.min(Math.max(elapsedWorkoutTime, 0), workoutTotal);
+                const percent = (clampedTime / workoutTotal) * 100;
+                timelinePointer.style.left = `${percent}%`;
+            }
+
+            function stopAnimationFrame() {
+                if (animationFrameId !== null) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
+            }
+
+            function resetTimerState(message) {
+                stopAnimationFrame();
+                timerState = 'idle';
+                phases = [];
+                currentPhaseIndex = -1;
+                phaseRemaining = 0;
+                lastTimestamp = null;
+                elapsedWorkoutTime = 0;
+                updatePointer();
+
+                if (message) {
+                    statusDisplay.textContent = message;
+                } else {
+                    statusDisplay.textContent = workoutTotal > 0 ? defaultReadyMessage : 'Add time and sets to begin';
+                }
+
+                startPauseButton.textContent = 'Start';
+            }
+
+            function formatTime(seconds) {
+                const safeSeconds = Math.max(0, Math.ceil(seconds));
+                const minutes = Math.floor(safeSeconds / 60);
+                const remainingSeconds = safeSeconds % 60;
+                return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+            }
+
+            function buildPhases() {
+                const settings = getSettings();
+                phases = [];
+                const restIntervals = Math.max(0, settings.sets - 1);
+                workoutTotal = (settings.stretch * settings.sets) + (settings.rest * restIntervals);
+
+                if (settings.sets <= 0 || settings.stretch <= 0) {
+                    return { settings, valid: false };
+                }
+
+                phases.push({ type: 'countdown', duration: 3 });
+
+                for (let i = 0; i < settings.sets; i++) {
+                    phases.push({ type: 'stretch', duration: settings.stretch, set: i + 1 });
+                    if (i < settings.sets - 1 && settings.rest > 0) {
+                        phases.push({
+                            type: 'rest',
+                            duration: settings.rest,
+                            currentSet: i + 1,
+                            nextSet: i + 2
+                        });
+                    }
+                }
+
+                return { settings, valid: true };
+            }
+
+            function buildPhaseLabel() {
+                if (currentPhaseIndex < 0 || currentPhaseIndex >= phases.length) {
+                    return '';
+                }
+
+                const phase = phases[currentPhaseIndex];
+
+                if (phase.type === 'countdown') {
+                    return `Get ready: ${Math.max(0, Math.ceil(phaseRemaining))}`;
+                }
+
+                if (phase.type === 'stretch') {
+                    return `Stretch ${phase.set} – ${formatTime(phaseRemaining)}`;
+                }
+
+                if (phase.type === 'rest') {
+                    const nextLabel = phase.nextSet ? `Stretch ${phase.nextSet}` : '';
+                    const suffix = nextLabel ? ` (Next: ${nextLabel})` : '';
+                    return `Rest – ${formatTime(phaseRemaining)}${suffix}`;
+                }
+
+                return '';
+            }
+
+            function updateStatusDuringPhase() {
+                const label = buildPhaseLabel();
+                statusDisplay.textContent = label || defaultReadyMessage;
+            }
+
+            function getAudioContext() {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContextClass) {
+                    return null;
+                }
+
+                if (!stretchAudioContext) {
+                    stretchAudioContext = new AudioContextClass();
+                }
+
+                return stretchAudioContext;
+            }
+
+            async function resumeAudio() {
+                const context = getAudioContext();
+                if (!context) {
+                    return null;
+                }
+
+                if (context.state === 'suspended') {
+                    try {
+                        await context.resume();
+                    } catch (error) {
+                        console.warn('Unable to resume audio context', error);
+                        return null;
+                    }
+                }
+
+                return context;
+            }
+
+            function playToneSequence(count, frequency, type, duration, gap) {
+                const context = getAudioContext();
+                if (!context) {
+                    return;
+                }
+
+                const startTime = context.currentTime + 0.05;
+
+                for (let i = 0; i < count; i++) {
+                    const toneStart = startTime + i * (duration + gap);
+                    const oscillator = context.createOscillator();
+                    const gain = context.createGain();
+
+                    oscillator.type = type;
+                    oscillator.frequency.setValueAtTime(frequency, toneStart);
+
+                    gain.gain.setValueAtTime(0, toneStart);
+                    gain.gain.linearRampToValueAtTime(0.35, toneStart + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, toneStart + duration);
+
+                    oscillator.connect(gain);
+                    gain.connect(context.destination);
+
+                    oscillator.start(toneStart);
+                    oscillator.stop(toneStart + duration + 0.03);
+                }
+            }
+
+            function playStretchStartSignal() {
+                if (!audioReady) {
+                    return;
+                }
+                playToneSequence(3, 880, 'square', 0.08, 0.07);
+            }
+
+            function playStretchEndSignal() {
+                if (!audioReady) {
+                    return;
+                }
+                playToneSequence(1, 440, 'triangle', 0.18, 0.05);
+            }
+
+            function advancePhase() {
+                const previousPhase = phases[currentPhaseIndex];
+
+                if (previousPhase && previousPhase.type === 'stretch') {
+                    playStretchEndSignal();
+                }
+
+                currentPhaseIndex += 1;
+
+                if (currentPhaseIndex >= phases.length) {
+                    finishSequence();
+                    return;
+                }
+
+                const currentPhase = phases[currentPhaseIndex];
+                phaseRemaining = currentPhase.duration;
+
+                if (currentPhase.type === 'stretch') {
+                    playStretchStartSignal();
+                }
+
+                updateStatusDuringPhase();
+
+                if (phaseRemaining === 0) {
+                    advancePhase();
+                }
+            }
+
+            function finishSequence() {
+                stopAnimationFrame();
+                timerState = 'finished';
+                currentPhaseIndex = phases.length;
+                phaseRemaining = 0;
+                elapsedWorkoutTime = workoutTotal;
+                updatePointer();
+                statusDisplay.textContent = 'All stretches complete! Great job!';
+                startPauseButton.textContent = 'Start';
+            }
+
+            function progress(delta) {
+                let remaining = delta;
+
+                while (remaining > 0 && timerState === 'running' && currentPhaseIndex < phases.length) {
+                    const currentPhase = phases[currentPhaseIndex];
+                    if (!currentPhase) {
+                        break;
+                    }
+
+                    if (phaseRemaining <= 0) {
+                        advancePhase();
+                        if (timerState !== 'running') {
+                            return;
+                        }
+                        continue;
+                    }
+
+                    const slice = Math.min(phaseRemaining, remaining);
+
+                    if (currentPhase.type !== 'countdown') {
+                        elapsedWorkoutTime = Math.min(workoutTotal, elapsedWorkoutTime + slice);
+                        updatePointer();
+                    }
+
+                    phaseRemaining -= slice;
+                    remaining -= slice;
+
+                    if (phaseRemaining <= 1e-4) {
+                        phaseRemaining = 0;
+                        advancePhase();
+                        if (timerState !== 'running') {
+                            return;
+                        }
+                    } else {
+                        updateStatusDuringPhase();
+                    }
+                }
+
+                if (timerState === 'running') {
+                    updateStatusDuringPhase();
+                }
+            }
+
+            function step(timestamp) {
+                if (timerState !== 'running') {
+                    animationFrameId = null;
+                    return;
+                }
+
+                if (lastTimestamp === null) {
+                    lastTimestamp = timestamp;
+                }
+
+                const delta = (timestamp - lastTimestamp) / 1000;
+                lastTimestamp = timestamp;
+
+                if (delta > 0) {
+                    progress(delta);
+                }
+
+                if (timerState === 'running') {
+                    animationFrameId = requestAnimationFrame(step);
+                } else {
+                    animationFrameId = null;
+                }
+            }
+
+            function startSequence() {
+                sanitizeSettings();
+                const schedule = buildPhases();
+                updateTimelineVisuals(schedule.settings);
+
+                if (!schedule.valid) {
+                    elapsedWorkoutTime = 0;
+                    updatePointer();
+                    statusDisplay.textContent = 'Set at least one stretch longer than 0 seconds to begin.';
+                    timerState = 'idle';
+                    startPauseButton.textContent = 'Start';
+                    return;
+                }
+
+                stopAnimationFrame();
+                timerState = 'running';
+                startPauseButton.textContent = 'Pause';
+                currentPhaseIndex = -1;
+                phaseRemaining = 0;
+                elapsedWorkoutTime = 0;
+                updatePointer();
+                lastTimestamp = null;
+
+                advancePhase();
+                animationFrameId = requestAnimationFrame(step);
+            }
+
+            function pauseTimer() {
+                if (timerState !== 'running') {
+                    return;
+                }
+
+                stopAnimationFrame();
+                timerState = 'paused';
+                const label = buildPhaseLabel();
+                statusDisplay.textContent = label ? `Paused – ${label}` : 'Paused';
+                startPauseButton.textContent = 'Resume';
+            }
+
+            function resumeTimer() {
+                if (timerState !== 'paused') {
+                    return;
+                }
+
+                timerState = 'running';
+                startPauseButton.textContent = 'Pause';
+                lastTimestamp = null;
+                updateStatusDuringPhase();
+                animationFrameId = requestAnimationFrame(step);
+            }
+
+            function handleSettingsChange() {
+                sanitizeSettings();
+                updateTimelineVisuals();
+                resetTimerState();
+            }
+
+            startPauseButton.addEventListener('click', async () => {
+                const context = await resumeAudio();
+                audioReady = !!context;
+
+                if (timerState === 'idle' || timerState === 'finished') {
+                    startSequence();
+                } else if (timerState === 'running') {
+                    pauseTimer();
+                } else if (timerState === 'paused') {
+                    resumeTimer();
+                }
+            });
+
+            restartButton.addEventListener('click', () => {
+                sanitizeSettings();
+                updateTimelineVisuals();
+                resetTimerState('Timer reset. Ready to stretch');
+            });
+
+            [stretchDurationInput, restDurationInput, stretchSetInput].forEach(input => {
+                input.addEventListener('input', handleSettingsChange);
+            });
+
+            updateTimelineVisuals(getSettings());
+            resetTimerState();
+        }
+
         function createAreaConverter(bubble) {
             let isSqFtToSqM = true; // Track current mode
-            
+
             bubble.innerHTML = `
                 <div class="converter">
                     <div class="converter-header">
