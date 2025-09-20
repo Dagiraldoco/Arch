@@ -59,7 +59,7 @@
             position: relative;
             user-select: none;
             padding: 12px 12px 40px;
-            aspect-ratio: 1 / 1;
+            aspect-ratio: 1 / 1.08;
             overflow: hidden;
         }
 
@@ -421,6 +421,7 @@
             background: rgba(17, 34, 68, 0.65);
             color: #ffffff;
             cursor: pointer;
+            min-width: 0;
         }
 
         .input-group select:focus {
@@ -436,6 +437,7 @@
             font-size: 0.82rem;
             background: rgba(17, 34, 68, 0.65);
             color: #ffffff;
+            min-width: 0;
         }
 
         .input-group input::placeholder {
@@ -518,6 +520,7 @@
             .bubble {
                 padding: 10px 10px 36px;
                 min-height: 0;
+                aspect-ratio: auto;
             }
 
             .bubble.stretch-bubble {
