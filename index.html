@@ -58,14 +58,14 @@
             border: 1px solid #A89F91;
             position: relative;
             user-select: none;
-            padding: 12px 12px 40px;
-            aspect-ratio: 1 / 1.08;
+            padding: 12px 12px 68px;
+            aspect-ratio: 4 / 3;
             overflow: hidden;
         }
 
         .drag-handle {
             position: absolute;
-            bottom: 10px;
+            bottom: 18px;
             left: 50%;
             transform: translateX(-50%);
             width: 20px;
@@ -187,15 +187,15 @@
 
         /* Custom styles for the stretch stopwatch (originalIndex 4) */
         .bubble.stretch-bubble {
-            background: linear-gradient(145deg, #1f3b73 0%, #29a1c4 100%);
-            border: 2px solid rgba(255, 255, 255, 0.35);
-            box-shadow: 0 10px 40px rgba(41, 161, 196, 0.35);
-            padding: 12px 12px 44px;
+            background: linear-gradient(145deg, #0f9d58 0%, #34a853 100%);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 10px 40px rgba(52, 168, 83, 0.35);
+            padding: 12px 12px 72px;
         }
 
         .bubble.stretch-bubble:hover:not(.dragging) {
-            background: linear-gradient(145deg, #24468c 0%, #32b8db 100%);
-            box-shadow: 0 16px 45px rgba(41, 161, 196, 0.5);
+            background: linear-gradient(145deg, #0d8c4f 0%, #2fbe68 100%);
+            box-shadow: 0 16px 45px rgba(52, 168, 83, 0.5);
         }
 
         .stretch-timer {
@@ -240,8 +240,8 @@
         .stretch-field span {
             font-weight: 600;
             color: #ffffff;
-            font-size: 0.68rem;
-            letter-spacing: 0.35px;
+            font-size: 0.4rem;
+            letter-spacing: 0.2px;
         }
 
         .stretch-field input {
@@ -389,7 +389,7 @@
         }
 
         .swap-btn {
-            background: url('https://raw.githubusercontent.com/Dagiraldoco/Arch/95f2f0492b4a67129e1934046e53e4f9e6456405/Swap%20button.png') no-repeat center;
+            background: url('https://raw.githubusercontent.com/Dagiraldoco/Arch/refs/heads/main/Swap%20button.png') no-repeat center;
             background-size: contain;
             color: transparent;
             border: none;
@@ -504,6 +504,33 @@
             letter-spacing: 4px;
         }
 
+        @media (min-width: 769px) {
+            .container {
+                max-width: 1344px;
+            }
+
+            .grid {
+                max-width: 1152px;
+            }
+
+            .bubble {
+                padding-bottom: 88px;
+            }
+
+            .bubble.stretch-bubble {
+                padding-bottom: 104px;
+            }
+
+            .converter,
+            .stretch-timer {
+                padding-bottom: 48px;
+            }
+
+            .drag-handle {
+                bottom: 12px;
+            }
+        }
+
         /* Mobile responsiveness */
         @media (max-width: 768px) {
             body {
@@ -518,13 +545,13 @@
             }
 
             .bubble {
-                padding: 10px 10px 36px;
+                padding: 12px 12px 56px;
                 min-height: 0;
                 aspect-ratio: auto;
             }
 
             .bubble.stretch-bubble {
-                padding: 10px 10px 36px;
+                padding: 12px 12px 60px;
             }
 
             .word {
@@ -555,7 +582,11 @@
             }
 
             .bubble {
-                padding: 8px 8px 30px;
+                padding: 10px 10px 52px;
+            }
+
+            .bubble.stretch-bubble {
+                padding: 10px 10px 56px;
             }
 
             .title {
